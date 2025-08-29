@@ -13,6 +13,15 @@ O objetivo é servir como uma aplicação de aprendizado e prática em programa�
 - Divisão de dois números
 - Tratamento de erros (ex.: divisão por zero)
 
+- Dificuldades encontradas:
+
+Entender como criar a pasta .github/workflows e o arquivo pipeline.yml corretamente.
+
+Configurar o workflow do GitHub Actions para rodar a calculadora.
+
+Autenticação no GitHub via terminal (git push) usando Personal Access Token em vez da senha normal.
+
+Entender como os runners funcionam e como visualizar a execução do workflow na aba Actions.
 ---
 
 ## 💻 Pré-requisitos
