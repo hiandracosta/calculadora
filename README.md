@@ -38,5 +38,5 @@ Para rodar o projeto, você precisa ter instalado no seu computador:
 ## 🚀 Como executar
 
 1. **Clone o repositório:**
-   ```bash
+   
  git clone https://github.com/hiandracosta/calculadora.git
