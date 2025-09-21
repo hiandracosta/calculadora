@@ -1,4 +1,4 @@
-name: CI - Calculadora
+name: CI/CD - Calculadora Console
 
 on:
   push:
@@ -7,23 +7,96 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest  # Runner (máquina virtual Linux do GitHub)
-
+  test:
+    name: 🧪 Testes Python
+    runs-on: ubuntu-latest
+    
     steps:
-      - name: Baixar o código
-        uses: actions/checkout@v3
+    - name: 📥 Checkout código
+      uses: actions/checkout@v4
 
-      - name: Configurar Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-      - name: Instalar dependências
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: 🧪 Executar testes locais
+      run: |
+        python test_calculadora.py
 
-      - name: Rodar testes
-        run: |
-          pytest || echo "Sem testes automatizados ainda"
+  docker:
+    name: 🐳 Build e Test Docker
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v4
+
+    - name: 🏗️ Build da imagem Docker
+      run: |
+        docker build -t calculadora:test .
+
+    - name: 🧪 Testar container
+      run: |
+        # Executar testes no container
+        docker run --rm calculadora:test python test_calculadora.py
+
+    - name: 📊 Verificar funcionalidade
+      run: |
+        # Criar container interativo
+        docker run -d --name calc-test calculadora:test tail -f /dev/null
+        
+        # Testar se a calculadora funciona
+        docker exec calc-test python -c "from main import soma; print(f'Teste: 2+3 = {soma(2,3)}')"
+        
+        # Limpar
+        docker stop calc-test
+        docker rm calc-test
+
+  terraform:
+    name: 🏗️ Terraform Deploy
+    needs: [test, docker]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v4
+
+    - name: 🏗️ Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.0
+
+    - name: 🔧 Terraform Init
+      working-directory: terraform
+      run: terraform init
+
+    - name: 📋 Terraform Plan
+      working-directory: terraform
+      run: terraform plan
+
+    - name: 🚀 Terraform Apply
+      working-directory: terraform
+      run: terraform apply -auto-approve
+
+    - name: 📊 Verificar deploy
+      working-directory: terraform
+      run: |
+        echo "🎉 Infraestrutura criada com sucesso!"
+        terraform output
+        
+        # Testar containers criados
+        docker ps --filter "label=project=calculadora"
+
+    - name: 🧪 Testar aplicação deployada
+      run: |
+        # Executar calculadora no container criado pelo Terraform
+        CONTAINER_NAME=$(docker ps --filter "label=project=calculadora" --filter "label=type=app-container" --format "{{.Names}}")
+        echo "Container da aplicação: $CONTAINER_NAME"
+        
+        # Testar calculadora
+        docker exec $CONTAINER_NAME python -c "from main import soma, subtrai; print(f'2+3={soma(2,3)}, 5-3={subtrai(5,3)}')"
+        
+        echo "✅ Aplicação funcionando perfeitamente!"
