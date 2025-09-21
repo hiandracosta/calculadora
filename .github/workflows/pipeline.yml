@@ -48,7 +48,7 @@ jobs:
         docker run -d --name calc-test calculadora:test tail -f /dev/null
         
         # Testar se a calculadora funciona
-        docker exec calc-test python -c "from main import soma; print(f'Teste: 2+3 = {soma(2,3)}')"
+        docker exec calc-test python -c "from calculadora import soma; print(f'Teste: 2+3 = {soma(2,3)}')"
         
         # Limpar
         docker stop calc-test
@@ -97,6 +97,6 @@ jobs:
         echo "Container da aplicação: $CONTAINER_NAME"
         
         # Testar calculadora
-        docker exec $CONTAINER_NAME python -c "from main import soma, subtrai; print(f'2+3={soma(2,3)}, 5-3={subtrai(5,3)}')"
+        docker exec $CONTAINER_NAME python -c "from calculadora import soma, subtrai; print(f'2+3={soma(2,3)}, 5-3={subtrai(5,3)}')"
         
         echo "✅ Aplicação funcionando perfeitamente!"
