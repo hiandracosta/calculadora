@@ -67,14 +67,17 @@ jobs:
     - name: 🏗️ Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: 1.6.0
+        terraform_version: 1.7.0
 
     - name: 🔧 Terraform Init
       working-directory: terraform
+      env:
+        TF_REGISTRY_DISCOVERY_RETRY: 10
+        TF_REGISTRY_CLIENT_TIMEOUT: 15
       run: |
-        # Configurar Terraform para não verificar assinaturas de providers
-        export TF_PLUGIN_CACHE_DIR=""
-        terraform init -upgrade
+        # Usar configuração inline para pular verificação
+        export TF_CLI_ARGS_init="-upgrade"
+        terraform init
 
     - name: 📋 Terraform Plan
       working-directory: terraform
